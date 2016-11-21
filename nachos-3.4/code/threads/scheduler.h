@@ -38,6 +38,7 @@ class Scheduler {
 
     void UpdateJobTime();
     int FindShortestJob();
+    Thread* GetShortestJob();
 };
 
 #endif // SCHEDULER_H

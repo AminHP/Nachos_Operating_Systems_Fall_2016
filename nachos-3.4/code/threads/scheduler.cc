@@ -73,10 +73,37 @@ Scheduler::ReadyToRun (Thread *thread)
 
 Thread *
 Scheduler::FindNextToRun ()
-{
+{	
     UpdateJobTime();
-    printf("%d\n", FindShortestJob());
-    return (Thread *)readyList->Remove();
+    //for (int i = 0; i < 11; ++ i)
+	//printf("job %d is %d, ",i, jobTimes[i] );
+	//Print();
+    if (readyList->IsEmpty()) return NULL;
+	List* temp= new List;
+	int minTime = 9999999 ;
+	while(!readyList->IsEmpty()){
+		Thread * t = (Thread* ) readyList->Remove();
+		if(jobTimes[atoi(t->getName())] < minTime)	minTime = jobTimes[atoi(t->getName())];
+		temp->Append(t);
+	}
+	readyList = temp;
+	   Thread *a =  (Thread *) readyList->Remove();
+	 while (jobTimes[atoi(a->getName())] > minTime){
+	   readyList->Append((void *)a);
+	   a = (Thread *) readyList->Remove();
+	}
+	return a;
+   /*int shortestJobName = FindShortestJob(); // shortest job name
+    printf("shortest job is %d\n", shortestJobName);
+ //   for (int i = 0; i < shortestJobIndex - 1; ++ i)
+	//readyList->Append(readyList->Remove());
+    GetShortestJob();
+   /* Thread *a =  (Thread *) readyList->Remove();
+    while (atoi(a->getName()) != shortestJobName){
+	   readyList->Append(a);
+	   a = (Thread *) readyList->Remove();
+    }
+*/
 }
 
 void
@@ -107,6 +134,31 @@ int Scheduler::FindShortestJob()
     return index;
 }
 
+Thread* Scheduler::GetShortestJob()
+{
+	printf("hereeeee");
+	List* temp;
+	int minTime = 9999999 ;
+	while(!readyList->IsEmpty()){
+		Thread * t = (Thread* ) readyList->Remove();
+		if(jobTimes[atoi(t->getName())] < minTime)	minTime = jobTimes[atoi(t->getName())];
+		printf("in while \n");
+		temp->Append( t);
+		printf("end of while \n");
+	}
+	printf("in while 2\n");
+	readyList = temp;
+	printf("in while 3\n");
+	   Thread *a =  (Thread *) readyList->Remove();
+	 printf("in while 4\n");
+	 while (jobTimes[atoi(a->getName())] > minTime){
+	   readyList->Append(a);
+	   a = (Thread *) readyList->Remove();
+	}
+	return a;
+	
+	
+}
 
 //----------------------------------------------------------------------
 // Scheduler::Run
@@ -145,7 +197,7 @@ Scheduler::Run (Thread *nextThread)
     printf("Switching from thread \"%s\" to thread \"%s\"\n",
 	  oldThread->getName(), nextThread->getName());
     
-    // This is a machine-dependent assembly language routine defined 
+    // This is a machine-dependent assembly language routine defi readyList->SortedRemove()ned 
     // in switch.s.  You may have to think
     // a bit to figure out what happens after this, both from the point
     // of view of the thread and from the perspective of the "outside world".
@@ -157,7 +209,7 @@ Scheduler::Run (Thread *nextThread)
 
     // If the old thread gave up the processor because it was finishing,
     // we need to delete its carcass.  Note we cannot delete the thread
-    // before now (for example, in Thread::Finish()), because up to this
+    // before now (for example, in Thread::Finish()), because upreadyList->Append( to this
     // point, we were still running on the old thread's stack!
     if (threadToBeDestroyed != NULL) {
         delete threadToBeDestroyed;
