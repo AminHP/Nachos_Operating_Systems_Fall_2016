@@ -31,6 +31,13 @@ class Scheduler {
   private:
     List *readyList;  		// queue of threads that are ready to run,
 				// but not running
+
+  private:
+    int lastTime;
+    int jobTimes[11];
+
+    void UpdateJobTime();
+    int FindShortestJob();
 };
 
 #endif // SCHEDULER_H

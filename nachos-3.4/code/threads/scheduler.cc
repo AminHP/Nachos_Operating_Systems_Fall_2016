@@ -18,6 +18,8 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
+#include "time.h"
+
 #include "copyright.h"
 #include "scheduler.h"
 #include "system.h"
@@ -30,6 +32,7 @@
 Scheduler::Scheduler()
 { 
     readyList = new List; 
+    lastTime = time(0);
 } 
 
 //----------------------------------------------------------------------
@@ -54,6 +57,7 @@ void
 Scheduler::ReadyToRun (Thread *thread)
 {
     DEBUG('t', "Putting thread %s on ready list.\n", thread->getName());
+    printf("Putting thread %s on ready list.\n", thread->getName());
 
     thread->setStatus(READY);
     readyList->Append((void *)thread);
@@ -70,8 +74,39 @@ Scheduler::ReadyToRun (Thread *thread)
 Thread *
 Scheduler::FindNextToRun ()
 {
+    UpdateJobTime();
+    printf("%d\n", FindShortestJob());
     return (Thread *)readyList->Remove();
 }
+
+void
+Scheduler::UpdateJobTime()
+{
+    char *name = currentThread->getName();
+    if (name == "main")
+    {
+        lastTime = time(0);
+        return ;
+    }
+
+    int currentTime = time(0);
+    jobTimes[atoi(name)] = currentTime - lastTime;
+    lastTime = time(0);
+}
+
+int Scheduler::FindShortestJob()
+{
+    int index = 1;
+    int min = jobTimes[1];
+    for (int i = 2; i < 11; i++)
+        if (jobTimes[i] < min)
+        {
+            min = jobTimes[i];
+            index = i;
+        }
+    return index;
+}
+
 
 //----------------------------------------------------------------------
 // Scheduler::Run
@@ -107,6 +142,8 @@ Scheduler::Run (Thread *nextThread)
     
     DEBUG('t', "Switching from thread \"%s\" to thread \"%s\"\n",
 	  oldThread->getName(), nextThread->getName());
+    printf("Switching from thread \"%s\" to thread \"%s\"\n",
+	  oldThread->getName(), nextThread->getName());
     
     // This is a machine-dependent assembly language routine defined 
     // in switch.s.  You may have to think
@@ -116,6 +153,7 @@ Scheduler::Run (Thread *nextThread)
     SWITCH(oldThread, nextThread);
     
     DEBUG('t', "Now in thread \"%s\"\n", currentThread->getName());
+    printf("Now in thread \"%s\"\n", currentThread->getName());
 
     // If the old thread gave up the processor because it was finishing,
     // we need to delete its carcass.  Note we cannot delete the thread
